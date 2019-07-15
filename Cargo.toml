@@ -1,0 +1,9 @@
+[package]
+name = "stream"
+version = "0.1.0"
+authors = ["fcracker79 <fcracker79@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+postgres = "0.15"
+kafka = "0.7"
