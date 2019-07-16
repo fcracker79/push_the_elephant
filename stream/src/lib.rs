@@ -13,8 +13,8 @@ pub struct Worker<'a> {
     table_name: &'a str,
     #[builder(default = "\"payload\"")]
     column_name: &'a str,
-    #[builder(default = "\"1=1\"")]
-    filter_name: &'a str,
+    #[builder(default = "\"events.activity\"")]
+    channel: &'a str,
     #[builder(default = "\"events\"")]
     topic_name: &'a str,
     #[builder(default = "100 as usize")]
@@ -26,7 +26,7 @@ pub struct Worker<'a> {
 impl <'a> Worker<'a> {
     pub fn run(&self) {
         let mut consumer = kafka::kafka::KafkaStreamConsumer::new(self.kafka_brokers.clone(), self.topic_name, self.buffer_size);
-        let producer = pgsql::pgsql::PostgreSQLStreamProducer::new(self.pgurl, self.table_name, self.column_name, self.filter_name);
+        let producer = pgsql::pgsql::PostgreSQLListenStreamProducer::new(self.pgurl, self.table_name, self.column_name, self.channel);
         producer.produce(&mut consumer);
     }
 }
