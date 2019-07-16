@@ -2,13 +2,12 @@ mod stream;
 mod pgsql;
 mod kafka;
 use crate::stream::StreamProducer;
-use std::boxed::Box;
 #[macro_use]
 extern crate derive_builder;
 
 #[derive(Builder)]
-struct Worker<'a> {
-    #[builder(default = "\"postgres://postgres@localhost:5432\"")]
+pub struct Worker<'a> {
+    #[builder(default = "\"postgres://postgres@localhost:5433\"")]
     pgurl: &'a str,
     #[builder(default = "\"events\"")]
     table_name: &'a str,
@@ -25,7 +24,7 @@ struct Worker<'a> {
 }
 
 impl <'a> Worker<'a> {
-    fn run(&self) {
+    pub fn run(&self) {
         let mut consumer = kafka::kafka::KafkaStreamConsumer::new(self.kafka_brokers.clone(), self.topic_name, self.buffer_size);
         let producer = pgsql::pgsql::PostgreSQLStreamProducer::new(self.pgurl, self.table_name, self.column_name, self.filter_name);
         producer.produce(&mut consumer);

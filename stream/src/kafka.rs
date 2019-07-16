@@ -29,6 +29,7 @@ pub mod kafka {
 
     impl <'a> stream::StreamConsumer for KafkaStreamConsumer<'a> {
         fn write(& mut self, element: stream::SourceElement) {
+            dbg!("Writing stuff");
             self.buffer.push(element);
             if self.max_buffer_size <= self.buffer.len() {
                 self.flush();
@@ -36,6 +37,7 @@ pub mod kafka {
         }
 
         fn flush(&mut self) {
+            dbg!("Flushing stuff");
             self.producer.send_all(
                 &self.buffer.iter().map(
                     |x| Record {topic: self.topic, partition: -1, key: &*x.id, value: &*x.data}
