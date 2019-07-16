@@ -6,7 +6,7 @@ pub struct SourceElement {
 }
 
 pub trait StreamProducer {
-    fn produce(&self, consumer: Box<dyn StreamConsumer>);
+    fn produce(&self, consumer: & mut impl StreamConsumer);
 }
 
 pub trait StreamConsumer {

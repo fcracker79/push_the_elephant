@@ -18,7 +18,7 @@ pub mod pgsql {
         }
     }
     impl <'a> stream::StreamProducer for PostgreSQLStreamProducer<'a> {
-        fn produce(& self, mut consumer: Box<dyn stream::StreamConsumer>) {
+        fn produce(& self, mut consumer: &mut impl stream::StreamConsumer) {
             let sql = &format!("SELECT {} FROM {}  WHERE {}", self.column_name, self.table_name, self.filter);
             let conn = Connection::connect(self.url, TlsMode::None).unwrap();
             for next_row in &conn.query(sql, &[]).unwrap() {

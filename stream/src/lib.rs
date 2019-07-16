@@ -26,9 +26,9 @@ struct Worker<'a> {
 
 impl <'a> Worker<'a> {
     fn run(&self) {
-        let consumer = Box::from(kafka::kafka::KafkaStreamConsumer::new(self.kafka_brokers.clone(), self.topic_name, self.buffer_size));
+        let mut consumer = kafka::kafka::KafkaStreamConsumer::new(self.kafka_brokers.clone(), self.topic_name, self.buffer_size);
         let producer = pgsql::pgsql::PostgreSQLStreamProducer::new(self.pgurl, self.table_name, self.column_name, self.filter_name);
-        producer.produce(consumer);
+        producer.produce(&mut consumer);
     }
 }
 #[cfg(test)]
