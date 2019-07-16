@@ -13,7 +13,7 @@ pub mod kafka {
     }
 
     impl <'a> KafkaStreamConsumer<'a> {
-        pub fn new(brokers: Vec<String>, topic: &str, max_buffer_size: usize) -> KafkaStreamConsumer {
+        pub fn new(brokers: Vec<String>, topic: &'a str, max_buffer_size: usize) -> KafkaStreamConsumer {
             KafkaStreamConsumer{
                 buffer: Vec::new(),
                 max_buffer_size: max_buffer_size,
