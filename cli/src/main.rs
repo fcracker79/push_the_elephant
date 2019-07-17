@@ -1,7 +1,9 @@
 use stream;
 extern crate clap;
-use clap::{Arg, App, SubCommand};
+use clap::{Arg, App};
 use std::time::Duration;
+extern crate log4rs;
+use log;
 
 fn main() {
     let matches = App::new("Push the Elephant")
@@ -33,7 +35,7 @@ fn main() {
                                .help("PostGreSQL Table column name (default: payload)")
                                .takes_value(true))
                           .arg(Arg::with_name("channel")
-                               .short("-l")
+                               .short("-z")
                                .long("channel-name")
                                .value_name("CHANNEL_NAME")
                                .help("PostGreSQL channel name (default: events.activity)")
@@ -62,8 +64,18 @@ fn main() {
                                .value_name("NOTIFY_TIMEOUT_TOTAL")
                                .help("Timeout after which rows are processed using a standard query (ms, default: 60000)")
                                .takes_value(true))
+                          .arg(Arg::with_name("log4rs_file")
+                               .short("-l")
+                               .long("log4rs-configuration")
+                               .value_name("LOG4RS_CONFIGURATION")
+                               .help("Log4rs YAML configuration file")
+                               .takes_value(true))
                           .get_matches();
     
+    if let Some(log4rs_file) = matches.value_of("log4rs_file") {
+        println!("Configuring logger using {}", log4rs_file);
+        log4rs::init_file(log4rs_file, Default::default()).unwrap();
+    }
     let mut builder = stream::WorkerBuilder::default();
     if let Some(pgurl) = matches.value_of("pg_url") {
         builder.pgurl(pgurl);
@@ -90,6 +102,6 @@ fn main() {
         builder.notify_timeout_total(Duration::from_millis(notify_timeout_total.parse().unwrap()));
     }
     let worker = builder.build().unwrap();
-    println!("Running worker {:?}", worker);
+    log::info!(target: "cli", "Running worker {:?}", worker);
     worker.run();
 }
