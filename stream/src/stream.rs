@@ -1,5 +1,6 @@
 use std::boxed::Box;
 
+#[derive(Debug)]
 pub struct SourceElement {
     pub id: Box<str>,
     pub data: Box<[u8]>

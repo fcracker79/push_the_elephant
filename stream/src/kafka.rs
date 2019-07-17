@@ -1,9 +1,10 @@
-pub mod kafka {
+pub mod stream {
     extern crate kafka;
     use kafka::producer::{Producer, Record, RequiredAcks};
     // use kafka::error::Error as KafkaError;
     use std::time::Duration;
     use crate::stream;
+    use log::{info, debug};
     
     pub struct KafkaStreamConsumer<'a> {
         buffer: Vec<stream::SourceElement>,
@@ -14,10 +15,11 @@ pub mod kafka {
 
     impl <'a> KafkaStreamConsumer<'a> {
         pub fn new(brokers: Vec<String>, topic: &'a str, max_buffer_size: usize) -> KafkaStreamConsumer {
+            info!(target: "kafka", "Connecting to brokers {:?}, topic {:?}, max_buffer_size {:?}", brokers, topic, max_buffer_size);
             KafkaStreamConsumer{
                 buffer: Vec::new(),
-                max_buffer_size: max_buffer_size,
-                topic: topic,
+                max_buffer_size,
+                topic,
                 producer: 
                     Producer::from_hosts(brokers)
                         .with_ack_timeout(Duration::from_secs(1))
@@ -29,7 +31,8 @@ pub mod kafka {
 
     impl <'a> stream::StreamConsumer for KafkaStreamConsumer<'a> {
         fn write(& mut self, element: stream::SourceElement) {
-            dbg!("Writing stuff");
+            info!(target: "kafka", "Writing element");
+            debug!(target: "kafka", "Writing element {:?}", element);
             self.buffer.push(element);
             if self.max_buffer_size <= self.buffer.len() {
                 self.flush();
@@ -37,7 +40,7 @@ pub mod kafka {
         }
 
         fn flush(&mut self) {
-            dbg!("Flushing stuff");
+            info!("Flushing Kafka buffer, size: {:?}", self.buffer.len());
             self.producer.send_all(
                 &self.buffer.iter().map(
                     |x| Record {topic: self.topic, partition: -1, key: &*x.id, value: &*x.data}
