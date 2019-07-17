@@ -6,4 +6,4 @@ edition = "2018"
 
 [dependencies]
 stream = { path = "../stream" }
-
+clap = "2.33.0"

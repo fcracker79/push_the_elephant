@@ -7,6 +7,7 @@ use std::time::Duration;
 #[macro_use]
 extern crate derive_builder;
 
+#[derive(Debug)]
 #[derive(Builder)]
 pub struct Worker<'a> {
     #[builder(default = "\"postgres://postgres@localhost:5433\"")]
