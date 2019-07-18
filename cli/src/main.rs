@@ -7,7 +7,7 @@ use log;
 
 fn main() {
     let matches = App::new("Push the Elephant")
-                          .version("1.0")
+                          .version("0.0.1")
                           .author("Mirko Bonasorte <fcracker79@gmail.com>")
                           .about("Moves data from a PostgreSQL table to Kafka topic using LISTEN/NOTIFY mechanisms")
                           .arg(Arg::with_name("pg_url")
