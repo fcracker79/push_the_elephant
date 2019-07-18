@@ -49,26 +49,6 @@ OPTIONS:
     -w, --topic-name <TOPIC_NAME>                        Kafka topic name (default: events)
 ```
 
-Library example
----------------
-You can also embed the tool in your own Rust project, as follows:
-
-```rust
-use stream;
-use std::time::Duration;
-
-fn go() {
-    stream::WorkerBuilder::default()
-        .pgurl("<your PostGreSQL URL>")
-        .kafka_brokers(vec!["<your Kafka host>".to_string()])
-        .table_name("<your table name>")
-        .column_name("<your table column containing the data to be pushed to Kafka>")
-        .channel("<PostGreSQL channel for LISTEN/NOTIFY>")
-        .notify_timeout(Duration::from_millis(500))
-        .notify_timeout_total(Duration::from_millis(60000))
-        .build().unwrap().run();
-}
-```
 The `notify-timeout` defines how much time the tool has to wait before it can flush data to Kafka.
 The `notify-timeout-total` defines how much time the tool has to wait before it can fallback to a standard SQL query to fetch the data to be moved to Kafka.
 The `buffer-size` define how many messages are to be collected before flushing data to Kafka.
