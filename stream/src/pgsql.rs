@@ -9,7 +9,8 @@ pub mod stream {
     use serde_json::{Value};
     use std::time::{SystemTime, Duration}; 
     use log::{info, debug, error};
-
+    
+    /// A StreamProducer for PostGreSQL LISTEN/NOTIFY backed up by standard SQL
     pub struct PostgreSQLListenStreamProducer<'a> {
         url: &'a str,
         table_name: &'a str,
@@ -20,6 +21,20 @@ pub mod stream {
     }
 
     impl <'a> PostgreSQLListenStreamProducer<'a> {
+        /// Returns a StreamProducer For PostGreSQL LISTEN/NOTIFY backed up by standard SQL
+        ///
+        /// Arguments:
+        ///
+        /// * `url` - PostGreSQL connection URL
+        /// * `table_name` - The table where messages to be sent are kept
+        /// * `column_name` - The column in the `table_name` table where the message content
+        /// resides
+        /// * `notify_timeout_total` - The timeout after which the producer moves data from
+        /// PostGreSQL to Kafka by using a standard SQL query and then flushes it. After that, it
+        /// starts back listening for notifications.
+        /// * `notify_timeout` - The timeout after which the notification system times out. When
+        /// this happens, the producer flushes all the data, then starts back listening for
+        /// notifications.
         pub fn new(url: &'a str, table_name: &'a str, column_name: &'a str, channel: &'a str, notify_timeout_total: Duration, notify_timeout: Duration) -> PostgreSQLListenStreamProducer<'a> {
             info!(target: "postgres", "Creating PostGreSQL connector for table {:?}, notifications at channel {:?}", table_name, channel);
             PostgreSQLListenStreamProducer{url, table_name, column_name, channel, notify_timeout_total, notify_timeout}

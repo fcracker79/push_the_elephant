@@ -5,15 +5,27 @@ pub mod stream {
     use std::time::Duration;
     use crate::stream;
     use log::{info, debug};
-    
+    /// A stream consumer for Kafka
     pub struct KafkaStreamConsumer<'a> {
+        /// The buffer of messages that will be sent in batch
         buffer: Vec<stream::SourceElement>,
+        /// The max buffer size
         max_buffer_size: usize,
+        /// The topic where messages are sent
         topic: &'a str,
+        /// Kafka messages producer
         producer: Producer
     }
 
     impl <'a> KafkaStreamConsumer<'a> {
+        /// Returns a new Stream Consumer for Kafka
+        ///
+        /// # Arguments
+        ///
+        /// * brokers - the list of Kafka hosts
+        /// * topic - the topic where message are sent
+        /// * max_buffer_size - the max number of messages that are sent in batch
+        ///
         pub fn new(brokers: Vec<String>, topic: &'a str, max_buffer_size: usize) -> KafkaStreamConsumer {
             info!(target: "kafka", "Connecting to brokers {:?}, topic {:?}, max_buffer_size {:?}", brokers, topic, max_buffer_size);
             KafkaStreamConsumer{
