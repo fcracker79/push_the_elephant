@@ -1,7 +1,9 @@
 mod stream;
-mod pgsql;
 mod kafka;
-use crate::stream::StreamProducer;
+mod pgsql;
+pub use crate::kafka::stream::*;
+pub use crate::stream::*;
+pub use pgsql::stream::*;
 use std::time::Duration;
 
 #[macro_use]
