@@ -13,4 +13,4 @@ before_script:
   - psql -c "create database push_the_elephant;" -U postgres
   - psql -c "create user push_the_elephant with encrypted password 'push_the_elephant';" -U postgres
   - psql -c "grant all privileges on database push_the_elephant to push_the_elephant;" -U postgres
-  - psql -f sql/init.sql -U postgres;
+  - psql -f sql/init.sql -U postgres push_the_elephant;
