@@ -32,6 +32,7 @@ fn messages_must_be_pushed() {
             let mut consumer = retry::retry(
                 delay::Fixed::from_millis(1000).take(10), 
                 || {
+                    println!("Creating Kafka consumer");
                     match Consumer::from_hosts(vec!("localhost:29092".to_string()))
                         .with_topic("events".to_string())
                         .with_group("test_events".to_string())
@@ -43,6 +44,7 @@ fn messages_must_be_pushed() {
                         }
                 }).unwrap();
             loop {
+                println!("Consuming Kafka messages");
                 let mss = consumer.poll().unwrap();
                 if mss.is_empty() {
                     continue;
