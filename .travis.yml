@@ -4,6 +4,7 @@ services:
 
 before_script:
   - docker swarm init
+  - docker network create -d overlay confluent_network
   - docker stack deploy -c travis/kafka.yml confluent
   - psql -c "create database push_the_elephant;" -U postgres
   - psql -c "create user push_the_elephant with encrypted password \'push_the_elephant\';"
