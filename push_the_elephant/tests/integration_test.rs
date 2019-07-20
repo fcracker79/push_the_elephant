@@ -20,6 +20,7 @@ fn messages_must_be_pushed() {
 
     let pte_handle = thread::Builder::new().name("Push The Button Test Runner".to_string())
         .spawn(move || {
+            println!("Publishing messages");
             push_the_elephant::WorkerBuilder::default()
                 .pgurl("postgres://push_the_elephant:push_the_elephant@localhost:5432/push_the_elephant")
                 .kafka_brokers(vec!("localhost:29092".to_string()))
@@ -30,7 +31,7 @@ fn messages_must_be_pushed() {
     let kafka_receiver_handle = thread::Builder::new().name("Kafka Test receiver".to_string())
         .spawn(move || {
             let mut consumer = retry::retry(
-                delay::Fixed::from_millis(1000).take(10), 
+                delay::Fixed::from_millis(1000).take(60), 
                 || {
                     println!("Creating Kafka consumer");
                     match Consumer::from_hosts(vec!("localhost:29092".to_string()))
@@ -39,13 +40,32 @@ fn messages_must_be_pushed() {
                         .with_fallback_offset(kafka::client::FetchOffset::Earliest)
                         .with_offset_storage(kafka::client::GroupOffsetStorage::Kafka)
                         .create() {
-                            Ok(c) => retry::OperationResult::Ok(c),
-                            _ => retry::OperationResult::Retry(())
+                            Ok(c) => {
+                                println!("Consumer creation successful");
+                                retry::OperationResult::Ok(c)
+                            },
+                            Err(e) => {
+                                println!("Error attempting to create Kafka consumer: {}", e);
+                                retry::OperationResult::Retry(())
+                            }
                         }
                 }).unwrap();
             loop {
-                println!("Consuming Kafka messages");
-                let mss = consumer.poll().unwrap();
+                let mss = retry::retry(
+                    delay::Fixed::from_millis(1000).take(60),
+                    || {
+                        println!("Consuming Kafka messages");
+                        match consumer.poll() {
+                            Ok(c) => {
+                                println!("Received Kafka messages");
+                                retry::OperationResult::Ok(c)
+                            },
+                            Err(e) => {
+                                println!("Error attemting to receive Kafka messages: {}", e);
+                                retry::OperationResult::Retry(())
+                            }
+                        }
+                    }).unwrap();
                 if mss.is_empty() {
                     continue;
                 }
