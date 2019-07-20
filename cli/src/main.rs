@@ -1,4 +1,4 @@
-use stream;
+use push_the_elephant;
 extern crate clap;
 use clap::{Arg, App};
 use std::time::Duration;
@@ -76,7 +76,7 @@ fn main() {
         println!("Configuring logger using {}", log4rs_file);
         log4rs::init_file(log4rs_file, Default::default()).unwrap();
     }
-    let mut builder = stream::WorkerBuilder::default();
+    let mut builder = push_the_elephant::WorkerBuilder::default();
     if let Some(pgurl) = matches.value_of("pg_url") {
         builder.pgurl(pgurl);
     }

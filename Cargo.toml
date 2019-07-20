@@ -1,6 +1,6 @@
 [workspace]
 
 members = [
-    "stream",
+    "push_the_elephant",
     "cli"
 ]

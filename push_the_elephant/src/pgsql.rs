@@ -2,7 +2,7 @@
 
 pub mod stream {
     extern crate postgres;
-    use crate::stream;
+    use crate::common;
     use postgres::{Connection, TlsMode};
     use std::boxed::Box;
     use fallible_iterator::FallibleIterator;
@@ -42,7 +42,7 @@ pub mod stream {
     }
     
     impl <'a> PostgreSQLListenStreamProducer<'a> {
-        fn flush_consumer(&self, data_to_delete: &mut Vec<i32>, consumer: &mut impl stream::StreamConsumer, conn: &Connection) {
+        fn flush_consumer(&self, data_to_delete: &mut Vec<i32>, consumer: &mut impl common::StreamConsumer, conn: &Connection) {
             info!(target: "postgres", "Flushing consumer");
             consumer.flush();
             if !data_to_delete.is_empty() {
@@ -59,8 +59,8 @@ pub mod stream {
                 data_to_delete.clear();
         }
     }
-    impl <'a> stream::StreamProducer for PostgreSQLListenStreamProducer<'a> {
-        fn produce(& self, consumer: &mut impl stream::StreamConsumer) {
+    impl <'a> common::StreamProducer for PostgreSQLListenStreamProducer<'a> {
+        fn produce(& self, consumer: &mut impl common::StreamConsumer) {
             let conn = Connection::connect(self.url, TlsMode::None).unwrap();
             let notifications = conn.notifications();
             let mut it = notifications.timeout_iter(self.notify_timeout);
@@ -73,7 +73,7 @@ pub mod stream {
                     let id: i32 = next_row.get(0);
                     let data: String = next_row.get(1);
                     let bin_data : &[u8] = data.as_bytes();
-                    consumer.write(stream::SourceElement{id: Box::from("123"), data: Box::from(bin_data)});
+                    consumer.write(common::SourceElement{id: Box::from("123"), data: Box::from(bin_data)});
                     data_to_delete.push(id);
                 }
                 info!(target: "postgres", "Fallback data pushed messages: {:?}", data_to_delete.len());
@@ -92,7 +92,7 @@ pub mod stream {
                                 debug!(target: "postgres", "Received {:?} from PostGreSQL notification", json_payload);
                                 let string_payload: &str = json_payload["payload"].as_str().unwrap();
                                 let id : i32 = json_payload["id"].as_i64().unwrap() as i32;
-                                consumer.write(stream::SourceElement{id: Box::from("123"), data: Box::from(string_payload.as_bytes())});
+                                consumer.write(common::SourceElement{id: Box::from("123"), data: Box::from(string_payload.as_bytes())});
                                 data_to_delete.push(id);
                             } else {
                                 debug!(target: "postgres", "Notification timeout expired");

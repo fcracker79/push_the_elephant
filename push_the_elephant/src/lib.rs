@@ -1,8 +1,8 @@
-mod stream;
+mod common;
 mod kafka;
 mod pgsql;
 pub use crate::kafka::stream::*;
-pub use crate::stream::*;
+pub use crate::common::*;
 pub use pgsql::stream::*;
 use std::time::Duration;
 

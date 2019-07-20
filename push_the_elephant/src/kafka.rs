@@ -3,12 +3,12 @@ pub mod stream {
     use kafka::producer::{Producer, Record, RequiredAcks};
     // use kafka::error::Error as KafkaError;
     use std::time::Duration;
-    use crate::stream;
+    use crate::common;
     use log::{info, debug};
     /// A stream consumer for Kafka
     pub struct KafkaStreamConsumer<'a> {
         /// The buffer of messages that will be sent in batch
-        buffer: Vec<stream::SourceElement>,
+        buffer: Vec<common::SourceElement>,
         /// The max buffer size
         max_buffer_size: usize,
         /// The topic where messages are sent
@@ -41,8 +41,8 @@ pub mod stream {
         }
     }
 
-    impl <'a> stream::StreamConsumer for KafkaStreamConsumer<'a> {
-        fn write(& mut self, element: stream::SourceElement) {
+    impl <'a> common::StreamConsumer for KafkaStreamConsumer<'a> {
+        fn write(& mut self, element: common::SourceElement) {
             info!(target: "kafka", "Writing element");
             debug!(target: "kafka", "Writing element {:?}", element);
             self.buffer.push(element);

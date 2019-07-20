@@ -1,5 +1,5 @@
 [package]
-name = "stream"
+name = "push_the_elephant"
 version = "0.0.1"
 authors = ["fcracker79 <fcracker79@gmail.com>"]
 edition = "2018"
