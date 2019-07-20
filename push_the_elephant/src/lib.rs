@@ -5,6 +5,7 @@ pub use crate::kafka::stream::*;
 pub use crate::common::*;
 pub use pgsql::stream::*;
 use std::time::Duration;
+use std::error;
 
 #[macro_use]
 extern crate derive_builder;
@@ -33,10 +34,11 @@ pub struct Worker<'a> {
 }
 
 impl <'a> Worker<'a> {
-    pub fn run(&self) {
-        let mut consumer = kafka::stream::KafkaStreamConsumer::new(self.kafka_brokers.clone(), self.topic_name, self.buffer_size);
+    pub fn run(&self) -> Result<(), Box<error::Error>> {
+        let mut consumer = kafka::stream::KafkaStreamConsumer::new(self.kafka_brokers.clone(), self.topic_name, self.buffer_size)?;
         let producer = pgsql::stream::PostgreSQLListenStreamProducer::new(self.pgurl, self.table_name, self.column_name, self.channel, self.notify_timeout_total, self.notify_timeout);
-        producer.produce(&mut consumer);
+        producer.produce(&mut consumer)?;
+        return Ok(());
     }
 }
 #[cfg(test)]

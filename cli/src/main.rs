@@ -103,5 +103,8 @@ fn main() {
     }
     let worker = builder.build().unwrap();
     log::info!(target: "cli", "Running worker {:?}", worker);
-    worker.run();
+    match worker.run() {
+        Ok(_) => (),
+        Err(x) => panic!("Could not stream data: {:?}", x)
+    }
 }

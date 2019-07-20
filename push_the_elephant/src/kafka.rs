@@ -1,5 +1,6 @@
 pub mod stream {
     extern crate kafka;
+    use std::error;
     use kafka::producer::{Producer, Record, RequiredAcks};
     // use kafka::error::Error as KafkaError;
     use std::time::Duration;
@@ -26,9 +27,9 @@ pub mod stream {
         /// * topic - the topic where message are sent
         /// * max_buffer_size - the max number of messages that are sent in batch
         ///
-        pub fn new(brokers: Vec<String>, topic: &'a str, max_buffer_size: usize) -> KafkaStreamConsumer {
+        pub fn new(brokers: Vec<String>, topic: &'a str, max_buffer_size: usize) -> Result<KafkaStreamConsumer, Box<error::Error>> {
             info!(target: "kafka", "Connecting to brokers {:?}, topic {:?}, max_buffer_size {:?}", brokers, topic, max_buffer_size);
-            KafkaStreamConsumer{
+            Ok(KafkaStreamConsumer{
                 buffer: Vec::new(),
                 max_buffer_size,
                 topic,
@@ -36,28 +37,30 @@ pub mod stream {
                     Producer::from_hosts(brokers)
                         .with_ack_timeout(Duration::from_secs(1))
                         .with_required_acks(RequiredAcks::One)
-                        .create().unwrap()
-            }
+                        .create()?
+            })
         }
     }
 
     impl <'a> common::StreamConsumer for KafkaStreamConsumer<'a> {
-        fn write(& mut self, element: common::SourceElement) {
+        fn write(& mut self, element: common::SourceElement) -> Result<(), Box<error::Error>> {
             info!(target: "kafka", "Writing element");
             debug!(target: "kafka", "Writing element {:?}", element);
             self.buffer.push(element);
             if self.max_buffer_size <= self.buffer.len() {
-                self.flush();
+                return self.flush();
             }
+            return Ok(());
         }
 
-        fn flush(&mut self) {
+        fn flush(&mut self) -> Result<(), Box<error::Error>> {
             info!("Flushing Kafka buffer, size: {:?}", self.buffer.len());
             self.producer.send_all(
                 &self.buffer.iter().map(
                     |x| Record {topic: self.topic, partition: -1, key: &*x.id, value: &*x.data}
-                ).collect::<Vec<Record<'_, &str, &[u8]>>>()).unwrap();
+                ).collect::<Vec<Record<'_, &str, &[u8]>>>())?;
             self.buffer.clear();
+            return Ok(());
         }
     }
 }
