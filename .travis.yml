@@ -6,6 +6,16 @@ services:
   - postgresql
   - docker
 
+cache: cargo
+before_cache:
+  - rm -rfv target/debug/incremental/push_the_elephant-*
+  - rm -rfv target/debug/.fingerprint/push_the_elephant-*
+  - rm -rfv target/debug/build/push_the_elephant-*
+  - rm -rfv target/debug/deps/libpush_the_elephant-*
+  - rm -rfv target/debug/deps/push_the_elephant-*
+  - rm -rfv target/debug/push_the_elephant,libpush_the_elephant}.d
+  - cargo clean -p push_the_elephant
+
 before_script:
   - docker swarm init
   - docker network create -d overlay confluent_network

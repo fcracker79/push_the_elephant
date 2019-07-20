@@ -1,5 +1,7 @@
 begin;
 
+create table EVENTS(id SERIAL primary key, payload varchar not null);
+
 create or replace function tg_notify_events ()
  returns trigger
  language plpgsql
