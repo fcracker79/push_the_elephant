@@ -1,6 +1,6 @@
 # Push the elephant
 
-[![Latest Version](https://img.shields.io/crates/v/push_the_elephant.svg)](https://crates.io/crates/push_the_elephant)
+[![build status](https://img.shields.io/travis/fcracker79/push_the_elephant/master.svg?style=flat-square)](https://travis-ci.org/fcracker79/push_the_elephant) [![Latest Version](https://img.shields.io/crates/v/push_the_elephant.svg)](https://crates.io/crates/push_the_elephant)
 
 Moves data from PostGreSQL database table to a Apache Kafka topic.  
 This may come in handy when you need to have RDBMS transactions that both modify the database and send messages to Apache Kafka.
