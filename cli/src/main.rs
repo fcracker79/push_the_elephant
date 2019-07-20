@@ -105,6 +105,6 @@ fn main() {
     log::info!(target: "cli", "Running worker {:?}", worker);
     match worker.run() {
         Ok(_) => (),
-        Err(x) => panic!("Could not stream data: {:?}", x)
+        Err(x) => panic!("Could not stream data: {:?}\nConfiguration: {:?}", x, worker)
     }
 }
