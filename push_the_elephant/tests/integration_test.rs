@@ -31,7 +31,7 @@ fn messages_must_be_pushed() {
     let kafka_receiver_handle = thread::Builder::new().name("Kafka Test receiver".to_string())
         .spawn(move || {
             let mut consumer = retry::retry(
-                delay::Fixed::from_millis(5000).take(60), 
+                delay::Fixed::from_millis(1000).take(60), 
                 || {
                     println!("Creating Kafka consumer");
                     match Consumer::from_hosts(vec!("localhost:29092".to_string()))
@@ -42,27 +42,27 @@ fn messages_must_be_pushed() {
                         .create() {
                             Ok(c) => {
                                 println!("Consumer creation successful");
-                                retry::OperationResult::Ok(c)
+                                return retry::OperationResult::Ok(c);
                             },
                             Err(e) => {
                                 println!("Error attempting to create Kafka consumer: [{}]", e);
-                                retry::OperationResult::Retry(())
+                                return retry::OperationResult::Retry(());
                             }
                         }
                 }).unwrap();
             loop {
                 let mss = retry::retry(
-                    delay::Fixed::from_millis(5000).take(60),
+                    delay::Fixed::from_millis(1000).take(60),
                     || {
                         println!("Consuming Kafka messages");
                         match consumer.poll() {
                             Ok(c) => {
                                 println!("Received Kafka messages");
-                                retry::OperationResult::Ok(c)
+                                return retry::OperationResult::Ok(c)
                             },
                             Err(e) => {
                                 println!("Error attemting to receive Kafka messages: {}", e);
-                                retry::OperationResult::Retry(())
+                                return retry::OperationResult::Retry(())
                             }
                         }
                     }).unwrap();
