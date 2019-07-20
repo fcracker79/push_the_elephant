@@ -29,3 +29,4 @@ before_script:
   - psql -f travis/sql/init.sql -U postgres push_the_elephant
   -  while true; do netstat -tpln 2>&1|grep LISTEN|grep 29092 >/dev/null; if [ "$?" == "0" ]; then break; else echo "Waiting for Kafka to start"; sleep 5; docker service logs confluent_kafka; docker stack ps confluent --no-trunc; fi; done
   - export RUST_BACKTRACE=1
+  - docker exec -ti `docker ps|grep confluent_kafka|awk '{print($1)}'` kafka-topics --create --partitions 1 --replication-factor 1 --topic events --zookeeper confluent_zookeeper:32181
