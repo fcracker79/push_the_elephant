@@ -17,8 +17,7 @@ services:
       - "moby:127.0.0.1"
 
   kafka:
-#    image: confluentinc/cp-kafka:latest
-    image: my_confluent:latest
+    image: confluentinc/cp-kafka:latest
     hostname: kafka
     networks:
       - confluent_network
