@@ -8,8 +8,8 @@ services:
     ports:
       - "32181:32181"
     volumes:
-      - ./data/zookeeper/zk-data:/var/lib/zookeeper/data
-      - ./data/zookeeper/zk-txn-logs:/var/lib/zookeeper/log
+      - ./travis/data/zookeeper/zk-data:/var/lib/zookeeper/data
+      - ./travis/data/zookeeper/zk-txn-logs:/var/lib/zookeeper/log
     environment:
       ZOOKEEPER_CLIENT_PORT: 32181
       ZOOKEEPER_TICK_TIME: 2000
@@ -24,7 +24,7 @@ services:
     ports:
       - "29092:29092"
     volumes:
-      - ./data/kafka/kafka-data:/var/lib/kafka/data
+      - ./travis/data/kafka/kafka-data:/var/lib/kafka/data
     depends_on:
       - zookeeper
     environment:
