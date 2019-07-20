@@ -27,4 +27,4 @@ before_script:
   - psql -c "create user push_the_elephant with encrypted password 'push_the_elephant';" -U postgres
   - psql -c "grant all privileges on database push_the_elephant to push_the_elephant;" -U postgres
   - psql -f travis/sql/init.sql -U postgres push_the_elephant
-  -  while true; do netstat -tpln 2>&1|grep LISTEN|grep 29092 >/dev/null; if [ "$?" == "0" ]; then break; else echo "Waiting for Kafka to start"; sleep 5; docker service logs confluent_kafka; fi; done
+  -  while true; do netstat -tpln 2>&1|grep LISTEN|grep 29092 >/dev/null; if [ "$?" == "0" ]; then break; else echo "Waiting for Kafka to start"; sleep 5; docker service logs confluent_kafka; docker stack ps confluent --no-trunc; fi; done
