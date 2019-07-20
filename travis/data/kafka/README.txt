@@ -1,1 +1,0 @@
-data mountpoint for kafka

@@ -24,7 +24,7 @@ services:
     ports:
       - "29092:29092"
     volumes:
-      - ./travis/data/kafka/kafka-data:/var/lib/kafka/data
+      - ./data/kafka/kafka-data:/var/lib/kafka/data
     depends_on:
       - zookeeper
     environment:
