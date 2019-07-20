@@ -45,7 +45,7 @@ fn messages_must_be_pushed() {
                                 retry::OperationResult::Ok(c)
                             },
                             Err(e) => {
-                                println!("Error attempting to create Kafka consumer: {}", e);
+                                println!("Error attempting to create Kafka consumer: [{}]", e);
                                 retry::OperationResult::Retry(())
                             }
                         }
