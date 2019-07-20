@@ -1,8 +1,8 @@
 begin;
 
-create table EVENTS(id SERIAL primary key, payload varchar not null);
-
-create or replace function tg_notify_events ()
+create table events(id SERIAL primary key, payload varchar not null);
+ALTER TABLE events OWNER TO push_the_elephant;
+CREATE OR REPLACE FUNCTION tg_notify_events ()
  returns trigger
  language plpgsql
 as $$
