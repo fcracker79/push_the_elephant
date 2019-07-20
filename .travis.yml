@@ -1,0 +1,10 @@
+services:
+  - postgresql
+  - docker
+
+before_script:
+  - docker swarm init
+  - docker stack deploy -c travis/kafka.yml confluent
+  - psql -c "create database push_the_elephant;" -U postgres
+  - psql -c "create user push_the_elephant with encrypted password \'push_the_elephant\';"
+  - psql -c "grant all privileges on database push_the_elephant to push_the_elephant";
