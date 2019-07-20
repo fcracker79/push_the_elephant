@@ -29,7 +29,7 @@ fn messages_must_be_pushed() {
     let thread_current_messages = sync::Arc::clone(&current_messages);
     let kafka_receiver_handle = thread::Builder::new().name("Kafka Test receiver".to_string())
         .spawn(move || {
-            let mut consumer = match retry::retry(
+            let mut consumer = retry::retry(
                 delay::Fixed::from_millis(1000).take(10), 
                 || {
                     match Consumer::from_hosts(vec!("localhost:29092".to_string()))
