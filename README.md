@@ -55,6 +55,23 @@ The `notify-timeout` defines how much time the tool has to wait before it can fl
 The `notify-timeout-total` defines how much time the tool has to wait before it can fallback to a standard SQL query to fetch the data to be moved to Kafka.
 The `buffer-size` define how many messages are to be collected before flushing data to Kafka.
 
+Library example
+---------------
+You can safely use the tool as part of your Rust project, as follows:
+
+```rust
+use push_the_elephant;
+
+push_the_elephant::WorkerBuilder::default()
+        .pgurl("postgres://push_the_elephant:push_the_elephant@localhost:5432/push_the_elephant")
+        .kafka_brokers(vec!["kafka.foo.com:9092".to_string()])
+        .table_name("events")
+        .column_name("payload")
+        .channel("events.activity")
+        .build().unwrap().run().unwrap();
+
+```
+
 PostGreSQL Trigger
 ------------------
 The following script contains an example of a trigger that intercepts all the inserts into the `events` table and sends such rows to the `events.activity` PostGreSQL channel.
@@ -86,4 +103,3 @@ CREATE TRIGGER notify_events
 
 commit;
 ```
-
