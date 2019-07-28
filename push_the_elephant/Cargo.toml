@@ -18,3 +18,4 @@ yaml-rust = "0.4.3"
 [dev-dependencies]
 retry = "0.5.1"
 rand = "0.7.0"
+assert_matches = "1.3.0"

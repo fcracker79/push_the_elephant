@@ -11,3 +11,7 @@ pub use crate::conf::configuration::*;
 
 #[macro_use]
 extern crate derive_builder;
+
+#[cfg(test)]
+#[macro_use]
+extern crate assert_matches;

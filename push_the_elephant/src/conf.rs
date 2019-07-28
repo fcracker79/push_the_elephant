@@ -26,16 +26,17 @@ pub mod configuration {
         }
     }
 
+    #[derive(Debug)]
     pub struct PushTheElephantConfiguration {
-        pgurl: Option<String>,
-        table_name: Option<String>,
-        column_name: Option<String>,
-        channel: Option<String>,
-        topic_name: Option<String>,
-        buffer_size: Option<usize>,
-        kafka_brokers: Option<Vec<String>>,
-        notify_timeout: Option<Duration>,
-        notify_timeout_total: Option<Duration>
+        pub pgurl: Option<String>,
+        pub table_name: Option<String>,
+        pub column_name: Option<String>,
+        pub channel: Option<String>,
+        pub topic_name: Option<String>,
+        pub buffer_size: Option<usize>,
+        pub kafka_brokers: Option<Vec<String>>,
+        pub notify_timeout: Option<Duration>,
+        pub notify_timeout_total: Option<Duration>
     }
 
     impl  PushTheElephantConfiguration {
@@ -77,20 +78,24 @@ pub mod configuration {
             })
         }
 
-        fn create_from_yaml_filename(filename: &str ) -> Result<Vec<PushTheElephantConfiguration>, Box<error::Error>> {
+        pub fn create_from_yaml_filename(filename: &str) -> Result<Vec<PushTheElephantConfiguration>, Box<error::Error>> {
             let contents = fs::read_to_string(filename)?;
             let yaml_contents = YamlLoader::load_from_str(&contents)?;
             Self::create_from_yaml(yaml_contents)
         }
+        
+        pub fn create_from_yaml_string(yaml_string: &str) -> Result<Vec<PushTheElephantConfiguration>, Box<error::Error>> {
+            Self::create_from_yaml(YamlLoader::load_from_str(yaml_string)?)
+        }
 
-        fn create_from_yaml(yaml_contents: Vec<Yaml>) -> Result<Vec<PushTheElephantConfiguration>, Box<error::Error>> {
+        pub fn create_from_yaml(yaml_contents: Vec<Yaml>) -> Result<Vec<PushTheElephantConfiguration>, Box<error::Error>> {
             let hash_configuration = match yaml_contents[0].as_hash() {
                 Some(hash_conf) => hash_conf,
                 _ => {
                     return Ok(Vec::new());
                 }
             };
-            let configuration_array = match hash_configuration.get(&Yaml::String("configuration".to_string())) {
+            let configuration_array = match hash_configuration.get(&Yaml::String("configurations".to_string())) {
                 Some(conf_entry) => match conf_entry.as_vec() {
                     Some(conf_array) => conf_array,
                     _ => {
@@ -114,5 +119,56 @@ pub mod configuration {
             }
             Ok(result)
         }
+    }
+}
+
+#[cfg(test)]
+pub mod tests {
+    use std::time::Duration;
+    use super::configuration;
+    #[test]
+    fn multiple_configurations() {
+        let conf = configuration::PushTheElephantConfiguration::create_from_yaml_string(
+            "
+configurations:
+    - 
+      pgurl: a_postgresql_url
+      buffer_size: 12345
+      notify_timeout: 67890
+      kafka_brokers:
+          - kafka_broker1
+          - kafka_broker2
+    - pgurl: another_postgresql_url
+      notify_timeout_total: 13579
+      channel: a_channel
+"
+        ).unwrap();
+        println!("********************** {:?}", conf);
+        assert_eq!(2, conf.len());
+        let conf1 = &conf[0];
+        let conf2 = &conf[1];
+        assert_matches!(&conf1.pgurl, Some(x) => {
+            assert_eq!("a_postgresql_url", x);
+        });
+        assert_matches!(&conf1.buffer_size, Some(x) => {
+            assert_eq!(12345 as usize, *x);
+        });
+        assert_matches!(&conf1.notify_timeout, Some(x) => {
+            assert_eq!(Duration::from_millis(67890), *x);
+        });
+        assert_matches!(&conf1.kafka_brokers, Some(x) => {
+            assert_eq!(vec!["kafka_broker1".to_string(), "kafka_broker2".to_string()], *x);
+        });
+        assert_matches!(&conf1.notify_timeout_total, None);
+        assert_matches!(&conf2.pgurl, Some(x) => {
+            assert_eq!("another_postgresql_url", x);
+        });
+        assert_matches!(&conf2.notify_timeout_total, Some(x) => {
+            assert_eq!(Duration::from_millis(13579), *x);
+        });
+        assert_matches!(&conf2.channel, Some(x) => {
+            assert_eq!("a_channel", x);
+        });
+
     }
 }
