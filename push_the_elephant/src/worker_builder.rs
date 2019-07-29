@@ -3,6 +3,8 @@ use crate::common::*;
 use crate::pgsql;
 use std::time::Duration;
 use std::error;
+use std::thread;
+use crate::conf::configuration;
 
 #[derive(Debug)]
 #[derive(Builder)]
@@ -33,5 +35,23 @@ impl <'a> Worker<'a> {
         let producer = pgsql::stream::PostgreSQLListenStreamProducer::new(self.pgurl, self.table_name, self.column_name, self.channel, self.notify_timeout_total, self.notify_timeout);
         producer.produce(&mut consumer)?;
         return Ok(());
+    }
+
+    pub fn multi_run(yaml_configuration_filename: &str) -> Result<(), Box<error::Error>> {
+        let configurations = configuration::PushTheElephantConfiguration::create_from_yaml_filename(yaml_configuration_filename)?;
+        let mut workers = Vec::new();
+        for configuration in configurations.iter() {
+             let mut builder = WorkerBuilder::default();
+             if let Some(x) = configuration.pgurl.as_ref() {
+                 builder.pgurl(x);
+             }
+             workers.push(builder.build()?);
+        }
+        let join_handles = workers.into_iter().map(|w| thread::spawn(move || w.run().unwrap())).collect::<Vec<thread::JoinHandle<_>>>();
+        // TODO
+        for join_handle in join_handles {
+            join_handle.join();
+        }
+        Ok(())
     }
 }
