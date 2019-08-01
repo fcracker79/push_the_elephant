@@ -8,6 +8,7 @@ pub mod configuration {
     use yaml_rust::YamlLoader;
     use yaml_rust::yaml::Yaml;
     use yaml_rust::yaml::Hash;
+    use log::{info, debug, warn};
 
     #[derive(Debug)]
     pub struct YamlConfigurationError {
@@ -27,6 +28,7 @@ pub mod configuration {
     }
 
     #[derive(Debug)]
+    /// A Push The Elephant configuration object.
     pub struct PushTheElephantConfiguration {
         pub pgurl: Option<String>,
         pub table_name: Option<String>,
@@ -40,6 +42,11 @@ pub mod configuration {
     }
 
     impl  PushTheElephantConfiguration {
+        /// Returns a String object from a YAML hash, if plausible
+        ///
+        /// Arguments:
+        /// * `key` - the key in the hash
+        /// * `data` - the hash where to look up the specified key for a string
         fn get_str_from_yaml(key: &str, data: &Hash) -> Option<String> {
             return match data.get(&Yaml::String(String::from(key))) {
                 Some(yaml_result) => Some(yaml_result.as_str()?.to_string()),
@@ -47,6 +54,11 @@ pub mod configuration {
             };
         }
 
+        /// Returns a u64 object from a YAML hash, if plausible
+        ///
+        /// Arguments:
+        /// * `key` - the key in the hash
+        /// * `data` - the hash where to look up the specified key for a u64
         fn get_u64_from_yaml(key: &str, data: &Hash) -> Option<u64> {
             return match data.get(&Yaml::String(String::from(key))) {
                 Some(yaml_result) => yaml_result.as_i64().map(|x| x as u64),
@@ -54,10 +66,29 @@ pub mod configuration {
             };
         }
         
+        /// Returns a Vec<String> object from a YAML hash, if plausible
+        ///
+        /// Arguments:
+        /// * `key` - the key in the hash
+        /// * `data` - the hash where to look up the specified key for a Vec<String>
         fn get_vec_string_from_yaml(key: &str, data: &Hash) -> Option<Vec<String>> {
             Some(data.get(&Yaml::String(String::from(key)))?.as_vec()?.iter().map(|e| e.as_str().unwrap().to_string()).collect())
         }
 
+        /// Creates a [PushTheElephantConfiguration](struct.PushTheElephantConfiguration.html) from a YAML configuration section.
+
+        /// Arguments:
+        /// * `yaml_conf` - a YAML section configuration, as described below
+        ///
+        /// YAML file example:
+        /// configurations:
+        ///    - # <- Here starts a YAML configuration that is expected to be passed to this function
+        ///        pgurl: postgres://push_the_elephant:push_the_elephant@localhost:5432/push_the_elephant
+        ///        kafka_brokers:
+        ///            - localhost:29092
+        ///    - # <- Here starts another YAML configuration that is expected to be passed to this function
+        ///        pgurl: postgres://another_push_the_elephant:another_push_the_elephant@localhost:5432/another_push_the_elephant
+        ///        ...
         fn create_configuration_from_yaml(yaml_conf: &Yaml) -> Result<PushTheElephantConfiguration, YamlConfigurationError> {
             let configuration = match yaml_conf.as_hash() {
                 Some(conf) => conf,
@@ -65,7 +96,7 @@ pub mod configuration {
                     return Err(YamlConfigurationError{yaml: yaml_conf.clone()});
                 }
             };
-            Ok(PushTheElephantConfiguration{
+            let result = PushTheElephantConfiguration{
                 pgurl: Self::get_str_from_yaml("pgurl", configuration),
                 table_name: Self::get_str_from_yaml("table_name", configuration),
                 column_name: Self::get_str_from_yaml("column_name", configuration),
@@ -75,15 +106,46 @@ pub mod configuration {
                 kafka_brokers: Self::get_vec_string_from_yaml("kafka_brokers", configuration),
                 notify_timeout: Self::get_u64_from_yaml("notify_timeout", configuration).map(|x| Duration::from_millis(x)),
                 notify_timeout_total: Self::get_u64_from_yaml("notify_timeout_total", configuration).map(|x| Duration::from_millis(x)),
-            })
+            };
+            debug!(target: "configuration", "Returning configuration {:?}", result);
+            Ok(result)
         }
 
+        /// Creates a Vec<[PushTheElephantConfiguration](struct.PushTheElephantConfiguration.html)> from a YAML configuration file.
+
+        /// Arguments:
+        /// * `filename` - a YAML configuration file
+        ///
+        /// YAML file example:
+        /// configurations:
+        ///    -
+        ///        pgurl: postgres://push_the_elephant:push_the_elephant@localhost:5432/push_the_elephant
+        ///        kafka_brokers:
+        ///            - localhost:29092
+        ///    -
+        ///        pgurl: postgres://another_push_the_elephant:another_push_the_elephant@localhost:5432/another_push_the_elephant
+        ///        ...
         pub fn create_from_yaml_filename(filename: &str) -> Result<Vec<PushTheElephantConfiguration>, Box<error::Error>> {
+            info!(target: "configuration", "Creating configuration from YAML file {}", filename);
             let contents = fs::read_to_string(filename)?;
             let yaml_contents = YamlLoader::load_from_str(&contents)?;
             Self::create_from_yaml(yaml_contents)
         }
         
+        /// Creates a Vec<[PushTheElephantConfiguration](struct.PushTheElephantConfiguration.html)> from a YAML string.
+
+        /// Arguments:
+        /// * `yaml_contents` - a YAML structure
+        ///
+        /// YAML contents example:
+        /// configurations:
+        ///    -
+        ///        pgurl: postgres://push_the_elephant:push_the_elephant@localhost:5432/push_the_elephant
+        ///        kafka_brokers:
+        ///            - localhost:29092
+        ///    -
+        ///        pgurl: postgres://another_push_the_elephant:another_push_the_elephant@localhost:5432/another_push_the_elephant
+        ///        ...
         pub fn create_from_yaml_string(yaml_string: &str) -> Result<Vec<PushTheElephantConfiguration>, Box<error::Error>> {
             Self::create_from_yaml(YamlLoader::load_from_str(yaml_string)?)
         }
@@ -99,10 +161,12 @@ pub mod configuration {
                 Some(conf_entry) => match conf_entry.as_vec() {
                     Some(conf_array) => conf_array,
                     _ => {
+                        warn!(target: "configuration", "No such available configuration entry in YAML `configurations` section");
                         return Ok(Vec::new());
                     }
                 }
                 _ => {
+                    warn!(target: "configuration", "No such YAML `configurations` section");
                     return Ok(Vec::new());
                 }
             };
@@ -111,6 +175,7 @@ pub mod configuration {
             for e in yaml_conf_array {
                 result.push(match e {
                     Err(err) => {
+                        warn!(target: "configuration", "Could not create configuration: {:?}", err);
                         return Err(Box::new(err));
                     },
                     Ok(c) => c
