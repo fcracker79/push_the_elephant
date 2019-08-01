@@ -13,7 +13,7 @@ Given a PostGreSQL table with the following structure:
 2. an arbitrary `VARCHAR` field containing what you are expecting to send to Kafka
 3. a trigger that notifies inserts using a PostGreSQL channel
 
-When Push The Elephant is in execution, all the data in the above table is +moved+ to a Kafka topic.  
+When Push The Elephant is in execution, all the data in the above table is *moved* to a Kafka topic.  
 This allows you to write projects that both changes your PostGreSQL data and send Kafka messages in a transactional context.
 All you have to do is write a row in the above table within your transaction.
 
@@ -23,7 +23,7 @@ CLI example
 The tools comes with a command line interface:
 
 ```
-Push the Elephant 0.0.1
+Push the Elephant 0.0.2
 Mirko Bonasorte <fcracker79@gmail.com>
 Moves data from a PostgreSQL table to Kafka topic using LISTEN/NOTIFY mechanisms
 
@@ -49,11 +49,23 @@ OPTIONS:
     -p, --pgurl <PG_URL>                                 PostGreSQL URL (default: postgres://postgres@localhost:5433)
     -t, --table-name <TABLE_NAME>                        PostGreSQL Table name (default: events)
     -w, --topic-name <TOPIC_NAME>                        Kafka topic name (default: events)
+    -y, --yaml-file <YAML_FILE>
+            YAML file with the following structure:
+                configurations:
+                - 
+                  pgurl: a_postgresql_url
+                  buffer_size: 12345
+                  notify_timeout: 67890
+                  kafka_brokers:
+                      - kafka_broker1
+                      - kafka_broker2
+                - ...
 ```
 
-The `notify-timeout` defines how much time the tool has to wait before it can flush data to Kafka.
-The `notify-timeout-total` defines how much time the tool has to wait before it can fallback to a standard SQL query to fetch the data to be moved to Kafka.
-The `buffer-size` define how many messages are to be collected before flushing data to Kafka.
+The `notify-timeout` defines how much time the tool has to wait before it can flush data to Kafka.  
+The `notify-timeout-total` defines how much time the tool has to wait before it can fallback to a standard SQL query to fetch the data to be moved to Kafka.  
+The `buffer-size` define how many messages are to be collected before flushing data to Kafka.  
+The `--yaml-file` option can not be specified together with the other parameters, except the `--log4s-configuration` param.
 
 Library example
 ---------------
