@@ -9,6 +9,9 @@ services:
   - postgresql
   - docker
 
+branches:
+  only: ["master"]
+
 cache: cargo
 before_cache:
   - rm -rfv target/debug/incremental/push_the_elephant-*
