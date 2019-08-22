@@ -117,6 +117,8 @@ pub mod configuration {
         /// * `filename` - a YAML configuration file
         ///
         /// YAML file example:
+        ///
+        /// ```yaml
         /// configurations:
         ///    -
         ///        pgurl: postgres://push_the_elephant:push_the_elephant@localhost:5432/push_the_elephant
@@ -125,6 +127,7 @@ pub mod configuration {
         ///    -
         ///        pgurl: postgres://another_push_the_elephant:another_push_the_elephant@localhost:5432/another_push_the_elephant
         ///        ...
+        /// ```
         pub fn create_from_yaml_filename(filename: &str) -> Result<Vec<PushTheElephantConfiguration>, Box<error::Error>> {
             info!(target: "configuration", "Creating configuration from YAML file {}", filename);
             let contents = fs::read_to_string(filename)?;
@@ -138,6 +141,8 @@ pub mod configuration {
         /// * `yaml_contents` - a YAML structure
         ///
         /// YAML contents example:
+        ///
+        /// ```yaml
         /// configurations:
         ///    -
         ///        pgurl: postgres://push_the_elephant:push_the_elephant@localhost:5432/push_the_elephant
@@ -146,6 +151,7 @@ pub mod configuration {
         ///    -
         ///        pgurl: postgres://another_push_the_elephant:another_push_the_elephant@localhost:5432/another_push_the_elephant
         ///        ...
+        /// ```
         pub fn create_from_yaml_string(yaml_string: &str) -> Result<Vec<PushTheElephantConfiguration>, Box<error::Error>> {
             Self::create_from_yaml(YamlLoader::load_from_str(yaml_string)?)
         }
